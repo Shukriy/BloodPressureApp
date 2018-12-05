@@ -1,0 +1,25 @@
+package ccol;
+
+import java.io.Serializable;
+
+public class BloodPressure implements Serializable{
+	private static final long serialVersionUID = -4125444044241656051L;
+	private int sys;
+	private int dias;
+	
+	public BloodPressure(int sys, int dias) {
+		this.sys = sys;
+		this.dias = dias;
+	}
+	public int getSys() {
+		return sys;
+	}
+	public int getDias() {
+		return dias;
+	}
+	@Override
+	public String toString() {
+		return sys + "/" + dias;
+	}
+	
+}

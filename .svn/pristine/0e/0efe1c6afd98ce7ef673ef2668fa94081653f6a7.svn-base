@@ -1,0 +1,610 @@
+package db;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.sql.*;
+
+import java.util.ArrayList;
+import java.util.Properties;
+
+import ccol.*;
+
+/** This method contains all the methods relating to accessing the database.
+ * @author Abdullah Ali
+ *
+ */
+public class Db {
+
+    private final String properties = "properties/db.properties";	// This file contains database info
+	private String url;				// Database username
+    private String user;			// Database username
+    private String password;		// Database password
+    Connection con;					// Connection to the database
+	
+	public Db () {
+		loadInfo();					// Loads database info
+		connect();					// Connects to the database
+	}
+	
+	/** Loads database info from properties file.
+	 *  Initialises the variables required to establish a connection with the database
+	 */
+	private void loadInfo() {
+		
+		Properties p = new Properties();
+		InputStream input = null;
+
+		try {
+
+			input = new FileInputStream(properties);
+
+			// loads properties file
+			p.load(input);
+
+			// get the property value
+			this.url = p.getProperty("url");
+			this.user = p.getProperty("user");
+			this.password = p.getProperty("password");
+
+		} catch (IOException ex) {
+			System.out.println("database information file not found");
+		} finally {
+			try {
+				input.close();
+			} catch (IOException e) {				
+				e.printStackTrace();
+			}			
+		}		
+	}
+	
+	/** This methods establishes a connection with the database
+	 * 
+	 */
+	private void connect () {
+		try {
+			con = DriverManager.getConnection (url, user, password);
+			if (con.isValid(5)) System.out.println("connection established!");
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void finalize () {
+		try {
+			this.con.close();
+			System.out.println("connection closed");
+		} catch (SQLException e) {
+			System.out.println("problem closing connection");
+			e.printStackTrace();
+		}
+	}
+	
+	
+	
+	public <T extends User> T getUser (String user, String pass) {	// Return type: generic subclass of User	
+		
+        try {
+        	String query = "SELECT * FROM users " + 
+					"WHERE users.user LIKE '" + user + "' AND pass = '" + pass + "';";
+        	
+        	PreparedStatement ps = con.prepareStatement(query);
+			ResultSet rs = ps.executeQuery();			
+			
+			if (!rs.next()) return null;
+			
+			int userID = (int) rs.getObject(1);
+			char role = ((String)rs.getObject(2)).charAt(0);
+			String userName = (String) rs.getObject(3); 
+			String passWord = (String) rs.getObject(4);
+			String title = (String) rs.getObject(5);
+			String firstName = (String) rs.getObject(6);
+			String surName = (String) rs.getObject(7);
+			String dob;
+			String nhsNumber;
+			String address;
+			int doctorID;
+			int targetSys;
+			int targetDias;
+			int rRemaining;
+			boolean completed;
+			BloodPressure target;
+			
+			if (role == 'p') {
+				dob  = (String) rs.getObject(8);
+				nhsNumber = (rs.getObject(9) != null)	? null : (String) rs.getObject(9);
+				address  = (String) rs.getObject(10);
+				doctorID = (int) rs.getObject(11);
+				targetSys  = (int) rs.getObject(12);
+				targetDias  = (int) rs.getObject(13);
+				rRemaining = (int) rs.getObject(14);
+				completed = (rs.getObject(15) != null) ? true : false;
+				target = new BloodPressure(targetSys, targetDias);
+				Patient p = new Patient (role, userName, passWord, title, firstName, 
+						surName, dob, nhsNumber, address, doctorID, target, rRemaining);
+				p.setCompleted(completed);
+				p.setUserID(userID);
+				
+				// Finds all readings
+				ArrayList<Readings> readings = getReadings (userID);
+				
+				// Adds readings to patient object
+				p.setReadings(readings);				
+				
+				ps.close();		// Closes PreparedStatement
+				rs.close(); 	// Closes ResultSet
+				
+				return (T) p;
+			}			
+			
+			ps.close();		// Closes PreparedStatement
+			rs.close(); 	// Closes ResultSet
+			
+			if (role == 'd') {
+				
+				Doctor d = new Doctor
+						(role, userName, passWord, title, firstName, surName);
+				
+				d.setUserID(userID);
+				return (T) d;
+			}
+			
+		} catch (SQLException e) {
+			System.out.println("no match found");
+	        return null;
+		} catch (Exception e) {
+			System.out.println("something went wrong, terminating");
+			e.printStackTrace();
+			return null;
+		}
+        System.out.println("no match found");
+        return null;
+		
+	}
+	
+	
+	public <T extends User> T getUser (int id) {	// Return type: generic subclass of User	
+		
+        try {
+        	String query = "SELECT * FROM users " + 
+					"WHERE users.user_id = '" + id + "';";
+        	
+        	PreparedStatement ps = con.prepareStatement(query);
+			ResultSet rs = ps.executeQuery();			
+			
+			if (!rs.next()) return null;
+			
+			int userID = (int) rs.getObject(1);
+			char role = ((String)rs.getObject(2)).charAt(0);
+			String userName = (String) rs.getObject(3); 
+			String passWord = (String) rs.getObject(4);
+			String title = (String) rs.getObject(5);
+			String firstName = (String) rs.getObject(6);
+			String surName = (String) rs.getObject(7);
+			String dob;
+			String nhsNumber;
+			String address;
+			int doctorID;
+			int targetSys;
+			int targetDias;
+			int rRemaining;
+			boolean completed;
+			BloodPressure target;
+			
+			if (role == 'p') {
+				dob  = (String) rs.getObject(8);
+				nhsNumber = (rs.getObject(9) != null)	? null : (String) rs.getObject(9);
+				address  = (String) rs.getObject(10);
+				doctorID = (int) rs.getObject(11);
+				targetSys  = (int) rs.getObject(12);
+				targetDias  = (int) rs.getObject(13);
+				rRemaining = (int) rs.getObject(14);
+				completed = (rs.getObject(15) != null) ? true : false;
+				target = new BloodPressure(targetSys, targetDias);
+				Patient p = new Patient (role, userName, passWord, title, firstName, 
+						surName, dob, nhsNumber, address, doctorID, target, rRemaining);
+				p.setCompleted(completed);
+				p.setUserID(userID);
+				
+				// Finds all readings
+				ArrayList<Readings> readings = getReadings (userID);
+				
+				// Adds readings to patient object
+				p.setReadings(readings);				
+				
+				ps.close();		// Closes PreparedStatement
+				rs.close(); 	// Closes ResultSet
+				
+				return (T) p;
+			}			
+			
+			ps.close();		// Closes PreparedStatement
+			rs.close(); 	// Closes ResultSet
+			
+			if (role == 'd') {
+				
+				Doctor d = new Doctor
+						(role, userName, passWord, title, firstName, surName);
+				
+				d.setUserID(userID);
+				return (T) d;
+			}
+			
+		} catch (SQLException e) {
+			System.out.println("no match found");
+	        return null;
+		} catch (Exception e) {
+			System.out.println("something went wrong, terminating");
+			e.printStackTrace();
+			return null;
+		}
+        System.out.println("no match found");
+        return null;
+		
+	}
+	
+	
+	
+	private ArrayList <Readings> getReadings (int userID) {
+		ArrayList <Readings> readings = new ArrayList <Readings>();
+		
+		try {
+			String query = "SELECT * FROM readings WHERE user_id = " + userID + " ORDER BY date asc, time asc;";
+			
+			PreparedStatement ps = con.prepareStatement(query);
+			ResultSet rs = ps.executeQuery();
+			while (rs.next()) {
+				
+				int id = (int) rs.getObject(1);
+				Date date = (Date) rs.getObject(2);
+				Time time = (Time) rs.getObject(3);
+				
+				int sys = (int) rs.getObject(4);
+				int dias = (int) rs.getObject(5);				
+				BloodPressure rOne = new BloodPressure(sys, dias);
+				
+				sys = (int) rs.getObject(6);
+				dias = (int) rs.getObject(7);	
+				BloodPressure rTwo = new BloodPressure(sys, dias);
+				
+				sys = (int) rs.getObject(8);
+				dias = (int) rs.getObject(9);	
+				BloodPressure rThree = new BloodPressure(sys, dias);
+				
+				sys = (int) rs.getObject(10);
+				dias = (int) rs.getObject(11);	
+				BloodPressure ave = new BloodPressure(sys, dias);
+				String comments = (String) rs.getObject(12);
+				
+				Readings r = new Readings(id, date, time, rOne, rTwo, rThree, ave, comments);
+				readings.add(r);
+			}
+			
+			ps.close();		// Closes PreparedStatement
+			rs.close(); 	// Closes ResultSet
+			
+			return readings;
+			
+		} catch (SQLException e) {
+			System.out.println("Something went wrong while trying to get BP readings");
+			e.printStackTrace();			
+		}
+		return null;
+		
+	}
+	
+	/**
+	 * For search function
+	 * @param name
+	 * @return ArrayList of patients, but without the readings filled in.
+	 */
+	// Need to check of WHERE name OR dob OR NHS can accept strings as numbers (for dob field)
+	public ArrayList<Patient> searchUser (String id) {
+		
+		try { 
+        	String query = 
+        			"SELECT * FROM users\r\n" + 
+        				"WHERE users.role LIKE 'p' AND (users.user LIKE '%" + id + "%' OR users.firstname LIKE '%" + id + "%' OR users.surname LIKE '%" + id + "%'\r\n" + 
+        				"OR users.dob LIKE '%" + id + "%' OR nhs_number LIKE '%" + id + "%');";
+        	
+        	PreparedStatement ps = con.prepareStatement(query);
+			ResultSet rs = ps.executeQuery();	
+			ArrayList<Patient> result = new ArrayList<Patient>();
+			
+			while (rs.next()) {
+								
+				int userID = (int) rs.getObject(1);
+				char role = ((String)rs.getObject(2)).charAt(0);
+				String userName = (String) rs.getObject(3); 
+				String passWord = (String) rs.getObject(4);
+				String title = (String) rs.getObject(5);
+				String firstName = (String) rs.getObject(6);
+				String surName = (String) rs.getObject(7);
+				String dob;
+				String nhsNumber;
+				String address;
+				int doctorID;
+				int targetSys;
+				int targetDias;
+				int rRemaining;
+				boolean completed;
+				BloodPressure target;
+				
+				dob  = (String) rs.getObject(8);
+				nhsNumber = (rs.getObject(9) == null)	? null : (String) rs.getObject(9);
+				address  = (String) rs.getObject(10);
+				doctorID = (int) rs.getObject(11);
+				targetSys  = (int) rs.getObject(12);
+				targetDias  = (int) rs.getObject(13);
+				rRemaining = (int) rs.getObject(14);
+				completed = (boolean) (rs.getObject(15) == null) ? false : true;
+				target = new BloodPressure(targetSys, targetDias);
+				
+				//ccol constructor
+				Patient p = new Patient (role, userName, passWord, title, firstName, 
+						surName, dob, nhsNumber, address, doctorID, target, rRemaining);
+				p.setCompleted(completed);
+				p.setUserID(userID);
+				
+				// Finds all readings
+				ArrayList<Readings> readings = getReadings (userID);
+				
+				// Adds readings to patient object
+				p.setReadings(readings);
+				
+				result.add(p);
+			}
+			
+			ps.close();		// Closes PreparedStatement
+			rs.close(); 	// Closes ResultSet
+			
+		
+			
+			ps.close();		// Closes PreparedStatement
+			rs.close(); 	// Closes ResultSet
+			
+			return result;
+			
+		} catch (SQLException e) {
+			System.out.println("no match found");
+	        return null;
+		} catch (Exception e) {
+			System.out.println("something went wrong, terminating");
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	
+	
+	public ArrayList<Patient> getCompleted (int id) {
+		
+		try { 
+        	String query = 
+        			"SELECT * FROM users\r\n" + 
+        				"WHERE users.role LIKE 'p' AND users.doctor_id =" + id + " AND users.completed = 'true'";
+        	
+        	PreparedStatement ps = con.prepareStatement(query);
+			ResultSet rs = ps.executeQuery();	
+			ArrayList<Patient> result = new ArrayList<Patient>();
+			
+			while (rs.next()) {
+								
+				int userID = (int) rs.getObject(1);
+				char role = ((String)rs.getObject(2)).charAt(0);
+				String userName = (String) rs.getObject(3); 
+				String passWord = (String) rs.getObject(4);
+				String title = (String) rs.getObject(5);
+				String firstName = (String) rs.getObject(6);
+				String surName = (String) rs.getObject(7);
+				String dob;
+				String nhsNumber;
+				String address;
+				int doctorID;
+				int targetSys;
+				int targetDias;
+				int rRemaining;
+				boolean completed;
+				BloodPressure target;
+				
+				dob  = (String) rs.getObject(8);
+				nhsNumber = (rs.getObject(9) == null)	? null : (String) rs.getObject(9);
+				address  = (String) rs.getObject(10);
+				doctorID = (int) rs.getObject(11);
+				targetSys  = (int) rs.getObject(12);
+				targetDias  = (int) rs.getObject(13);
+				rRemaining = (int) rs.getObject(14);
+				completed = (boolean) (rs.getObject(15) == null) ? false : true;
+				target = new BloodPressure(targetSys, targetDias);
+				
+				//ccol constructor
+				Patient p = new Patient (role, userName, passWord, title, firstName, 
+						surName, dob, nhsNumber, address, doctorID, target, rRemaining);
+				p.setCompleted(completed);
+				p.setUserID(userID);
+				
+				// Finds all readings
+				ArrayList<Readings> readings = getReadings (userID);
+				
+				// Adds readings to patient object
+				p.setReadings(readings);
+				
+				result.add(p);
+			}
+			
+			ps.close();		// Closes PreparedStatement
+			rs.close(); 	// Closes ResultSet
+			
+		
+			
+			ps.close();		// Closes PreparedStatement
+			rs.close(); 	// Closes ResultSet
+			
+			return result;
+			
+		} catch (SQLException e) {
+			System.out.println("no match found");
+	        return null;
+		} catch (Exception e) {
+			System.out.println("something went wrong, terminating");
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	
+	
+	
+	/** Checks for the availability of a username.
+	 * @param userName
+	 * @return True if entered username is not taken.
+	 */
+	public boolean checkUserName (String userName) {
+		try {
+			String query = "SELECT users.user FROM users WHERE users.user LIKE '" + userName + "';";
+			
+			PreparedStatement ps = con.prepareStatement(query);
+			ResultSet rs = ps.executeQuery();
+			
+			return !rs.next();
+			
+		} catch (SQLException e) {
+			System.out.println("Something went wrong while trying to check Username");
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
+	public void addUser (Patient p) {
+		// Adds user to the database		
+		try {
+			String query = "INSERT INTO users (role, \"user\", pass, title, firstname, surname, dob, nhs_number, address, doctor_id, target_sys, target_dias, remaining)" +
+					"VALUES ('" + p.getRole() + "', '" + p.getUserName() + "', '" + p.getPass() + "', '" + 
+					p.getTitle() + "', '" + p.getFirstName() +"', '" + p.getSurName() +
+					", '" + p.getDob() + "', '" + p.getNhsNumber() + "', '" + p.getAddress() + "', '" + 
+					p.getDoctorID() + "', '" + p.getTarget().getSys() + "', '" + p.getTarget().getDias() + "', '" + p.getrRemaining() + "');";
+			
+			PreparedStatement ps = con.prepareStatement(query);
+			ps.executeUpdate();
+			
+			
+		} catch (SQLException e) {
+			System.out.println("Something went wrong while trying to add user");
+			e.printStackTrace();
+		}
+		
+	}
+	
+	public void addUser (Doctor d) {
+		// Adds user to the database
+		try {
+			String query = "INSERT INTO users (role, \"user\", pass, title, firstname, surname)\n" +
+					"VALUES ('" + d.getRole() + "', '" + d.getUserName() + "', '" + d.getPass() + "', '" + d.getTitle() + "', '" + d.getFirstName() +"', '" + d.getSurName() + "');";
+			
+			PreparedStatement ps = con.prepareStatement(query);
+			ps.executeUpdate();
+			
+			
+		} catch (SQLException e) {
+			System.out.println("Something went wrong while trying to add user");
+			e.printStackTrace();
+		}
+		
+		
+	}
+	
+	public void addReading (Readings r) {
+		// Adds Readings to the database
+		try {
+			String query = "INSERT INTO readings (user_id, date, time, sys1, dias1, sys2, dias2, sys3, dias3, sys_ave, dias_ave, comments)" +
+					"VALUES (" + r.getUserID() + ", DATE '" + r.getDate() + "', TIME '" + r.getTime() + "', "
+					+ r.getrOne().getSys() + ", " + r.getrOne().getDias() + ", " + r.getrTwo().getSys() + ", " + r.getrTwo().getDias() + ", " + r.getrThree().getSys() + ", " + r.getrThree().getDias() + ", "
+					+ r.getAve().getSys() + ", " + r.getAve().getDias() + ", '" + r.getComments() + "');";
+						
+			PreparedStatement ps = con.prepareStatement(query);
+			ps.executeUpdate();
+			
+			
+		} catch (SQLException e) {
+			System.out.println("Something went wrong while trying to add reading");
+			e.printStackTrace();
+		}
+		
+		// Updates remaining readings in the user
+		updateRemaining(r.getUserID());
+	}
+	
+	/** Runs whenever a reading is added. 
+	 *  Updates the rRemaining on the patient.
+	 *  If rRemaining is zero, sets completed to true
+	 * @param userID
+	 */
+	private void updateRemaining (int userID) {
+		try {
+			// Get user remaining val
+			String query = "SELECT users.remaining FROM users WHERE users.user_id = '" + userID + "';";
+			
+			PreparedStatement ps = con.prepareStatement(query);
+			ResultSet rs = ps.executeQuery();
+			
+			rs.next();		
+			
+			int r = (int) rs.getObject(1);
+			
+			ps.close();
+			rs.close();
+			
+			// If val == 1, decrement and set completed
+			
+			if (r == 1) {
+				query = "UPDATE users SET remaining = " + (r-1) + "WHERE users.user_id = " + userID + ";";
+				PreparedStatement ps2 = con.prepareStatement(query);
+				ps2.executeUpdate();
+				
+				// Sets completed to true
+				query = "UPDATE users SET completed = true WHERE users.user_id = " + userID + ";";
+				ps2 = con.prepareStatement(query);
+				ps2.executeUpdate();
+			}
+			
+			// else If val > 1, decrement
+			else if (r > 1) {
+				query = "UPDATE users SET remaining = " + (r-1) + "WHERE users.user_id = " + userID + ";";
+				PreparedStatement ps2 = con.prepareStatement(query);
+				ps2.executeUpdate();
+				
+				ps2.close();
+			}
+		} catch (SQLException e) {
+			System.out.println("Something went wrong while trying to update remaining readings");
+			e.printStackTrace();
+			return;
+		}
+	}
+	
+	
+	public static void main(String[] args) {
+		Db db = new Db();
+		
+		try {			
+			
+			Patient p = db.getUser(4);		
+//			System.out.println(p.getrRemaining());
+//			db.updateRemaining(p.getUserID());
+//			
+//			p = db.getUser("dummy", "dummy");		
+//			System.out.println(p.getrRemaining());
+			
+			System.out.println(db.getCompleted(3));
+			
+//			Doctor d = db.getUser("doc", "doc");		
+//			System.out.println(d);
+//			
+//			System.out.println(db.checkUserName("daf"));
+			
+//			System.out.println(db.searchUser("du"));
+		
+		} finally {	
+			db.finalize();
+		}
+	}
+}

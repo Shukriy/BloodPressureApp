@@ -1,0 +1,219 @@
+package FinalGUI;
+
+import java.awt.EventQueue;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import java.awt.Color;
+
+import javax.swing.JTextField;
+import javax.swing.ListModel;
+import javax.swing.SpinnerDateModel;
+import javax.swing.border.LineBorder;
+import javax.swing.text.DateFormatter;
+
+import ccol.BloodPressure;
+import ccol.Doctor;
+import ccol.Patient;
+import ccol.Readings;
+import ccol.User;
+import model.Model;
+import networking_client.Communicate;
+import networking_client.Updates;
+
+import java.awt.Font;
+import java.awt.SystemColor;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.sql.Date;
+import java.sql.Time;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Observable;
+import java.util.Observer;
+
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.ActionEvent;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.EtchedBorder;
+import javax.swing.JScrollPane;
+import com.toedter.calendar.JDateChooser;
+
+import GUI.AddPatient;
+import GUI.ViewPatient;
+
+import javax.swing.JSpinner;
+
+
+public class DHomePage extends JPanel {
+	private JPanel contentPane;
+	private ArrayList<Patient> patients;
+	private JList list1 = new JList();
+	private JList list2 = new JList();
+	private JScrollPane scrollPane;
+	private Patient p;
+	private ArrayList<Patient> compatients;
+	private int DoctorId;
+	private JScrollPane scrollPane_1;
+	private Updates update;
+	private static Doctor d;
+	
+	/**
+	 * Create the panel.
+	 */
+	public DHomePage(Doctor d) {
+		this.d = d;
+		this.setBackground(Color.WHITE);
+		this.setLayout(null);
+		this.setBounds(0, 0, 884, 583);
+		this.setVisible(true);
+		
+		JPanel panelBG = new JPanel();
+		panelBG.setBackground(Color.WHITE);
+		panelBG.setBounds(0, 0, 1100, 729);
+		contentPane.add(panelBG);
+		panelBG.setLayout(null);
+		
+		JPanel panel_1 = new JPanel();
+		panel_1.setBorder(new LineBorder(new Color(0, 0, 0)));
+		panel_1.setBackground(new Color(153, 204, 255));
+		panel_1.setBounds(0, 0, 1100, 125);
+		panelBG.add(panel_1);
+		panel_1.setLayout(null);
+		
+		JLabel label_2 = new JLabel("Patient Blood Pressure Readings");
+		label_2.setBounds(317, 43, 545, 33);
+		label_2.setFont(new Font("Arial", Font.BOLD, 34));
+		panel_1.add(label_2);
+		
+		JPanel panel = new JPanel();
+		panel.setLayout(null);
+		panel.setBorder(new LineBorder(new Color(0, 0, 0)));
+		panel.setBackground(new Color(153, 204, 255));
+		panel.setBounds(0, 137, 646, 83);
+		panelBG.add(panel);
+		
+		JLabel lblSearchForPatient = new JLabel("Search for Patient");
+		lblSearchForPatient.setFont(new Font("Arial", Font.PLAIN, 16));
+		lblSearchForPatient.setBackground(Color.WHITE);
+		lblSearchForPatient.setBounds(14, 20, 166, 38);
+		panel.add(lblSearchForPatient);
+		
+		JTextField SearchName = new JTextField();
+		SearchName.setToolTipText("Patient Name");
+		SearchName.setColumns(10);
+		SearchName.setBounds(176, 20, 274, 40);
+		panel.add(SearchName);
+		
+		JButton button = new JButton("Search");
+		button.addActionListener(new ActionListener() {
+			
+
+			public void actionPerformed(ActionEvent e) {
+				String name = SearchName.getText();
+				 patients = Communicate.searchUser(name);
+				 ListModel model = new DefaultComboBoxModel(patients.toArray());
+				 list1.setModel(model);
+				 scrollPane.setViewportView(list1);	
+				 
+				 list1.addMouseListener(new MouseAdapter(){  
+						public void mouseClicked(MouseEvent e){  
+					        if(e.getClickCount()==2){   //When double click JList  
+					        int i =list1.getSelectedIndex();  //get the content of current line
+                         String username = patients.get(i).getUserName();
+                         String password = patients.get(i).getPass();
+					        p = (Patient) Communicate.getUser(username, password);					        
+					        new GUI.ViewPatient(p);// new a window same as BP progress, and target
+					        Communicate.stopUpdater();
+					        }  
+					    }  
+					});  
+			}
+		});
+		
+		button.setBounds(514, 22, 103, 38);
+		panel.add(button);
+		
+		JPanel panel_2 = new JPanel();
+		panel_2.setLayout(null);
+		panel_2.setBorder(new LineBorder(new Color(0, 0, 0)));
+		panel_2.setBackground(new Color(153, 204, 255));
+		panel_2.setBounds(0, 232, 646, 491);
+		panelBG.add(panel_2);
+		
+		scrollPane = new JScrollPane();
+		scrollPane.setBounds(22, 29, 599, 319);
+		panel_2.add(scrollPane);
+		
+		JButton btnAddNewPatient = new JButton("Add New Patient");
+		btnAddNewPatient.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				new AddPatient(d).setVisible(true);
+			}
+		});
+		
+		btnAddNewPatient.setFont(new Font("Arial", Font.BOLD, 15));
+		btnAddNewPatient.setBounds(259, 360, 187, 64);
+		panel_2.add(btnAddNewPatient);
+		
+		JPanel panel_3 = new JPanel();
+		panel_3.setLayout(null);
+		panel_3.setBorder(new LineBorder(new Color(0, 0, 0), 2));
+		panel_3.setBackground(new Color(153, 204, 255));
+		panel_3.setBounds(656, 137, 440, 542);
+		panelBG.add(panel_3);
+		
+		scrollPane_1 = new JScrollPane();
+		scrollPane_1.setBounds(34, 56, 382, 456);
+		panel_3.add(scrollPane_1);
+		
+		DoctorId = d.getUserID();
+		compatients = Communicate.getCompleted(DoctorId);
+		ListModel model = new DefaultComboBoxModel(compatients.toArray());
+		list2.setModel(model);
+		scrollPane_1.setViewportView(list2);
+		
+		list2.addMouseListener(new MouseAdapter(){  
+		    public void mouseClicked(MouseEvent e){  
+		        if(e.getClickCount()==2){   //When double click JList  
+		        int i =list2.getSelectedIndex();  //get the content of current line
+                String username = compatients.get(i).getUserName();
+                String password = compatients.get(i).getPass();
+		        p = (Patient) Communicate.getUser(username, password);
+		        new ViewPatient(p);// new a window same as BP progress, and target
+		        Communicate.startUpdater(update);
+		        }  
+		    }  
+		});
+		
+		JLabel label_1 = new JLabel("Complete Reading");
+		label_1.setFont(new Font("Arial Black", Font.PLAIN, 20));
+		label_1.setBounds(117, 12, 216, 32);
+		panel_3.add(label_1);
+		
+//		frame.setVisible(true);
+	
+}
+
+	public void update(Observable o, Object arg) {
+		System.out.println("ready for update");
+
+		compatients = Communicate.getCompleted(DoctorId);
+//		initialize();
+
+		System.out.println("complete update");
+
+	}
+
+}

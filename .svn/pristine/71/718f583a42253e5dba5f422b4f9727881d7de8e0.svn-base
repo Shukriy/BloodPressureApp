@@ -1,0 +1,62 @@
+package NEW;
+
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
+
+import javax.swing.JOptionPane;
+
+import GUI.DHomePage;
+import GUI.PHomePage;
+import ccol.Doctor;
+import ccol.Patient;
+import ccol.User;
+
+public class LoginListener implements ActionListener {
+	private Model model;
+	private String userName;
+	private String password;
+	private User user;
+	private Patient patient;
+	private Doctor doctor;
+
+	
+	public LoginListener(Model model, String userName, String password) {
+		this.model = model;
+		this.userName = userName;
+		this.password = password;
+	}
+	
+	
+	public void actionPerformed(ActionEvent e) {
+		if(!model.authentication(userName, password)) {
+			JOptionPane.showMessageDialog(null, "wrong username or password");
+		}
+		else 
+			user = Model.getUserObject(userName, password);
+		
+			char role = Model.typeUser(user);
+			
+			if (role=='p') {
+				//Panel1.dispose();
+				PHomePage p;
+					patient = (Patient) user;//casted user to patient to get the target
+					try {
+						p = new PHomePage(patient);
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					
+			}
+			else {
+				//frame.dispose();
+			DHomePage d;
+			doctor = (Doctor) user;
+			d = new DHomePage(doctor);
+			
+	}
+	}
+
+}

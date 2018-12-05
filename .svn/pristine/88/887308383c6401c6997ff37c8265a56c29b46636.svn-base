@@ -1,0 +1,46 @@
+package FinalGUI;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+
+import javax.swing.JFrame;
+
+import networking_client.Communicate;
+
+/**This class represents the view.
+ *  Essentially here we create the JFrame (top-level container),
+ *  and all the classes which make up the complete GUI.
+ *
+ */
+
+
+public class View{
+
+	public static JFrame frame;
+	
+	public static void main(String[] args) throws Exception {
+		javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
+		try {
+			Communicate.setPortHost(Integer.parseInt(args[0]), args[1]);
+		} catch (ArrayIndexOutOfBoundsException e) {
+			System.err.println("No networking informaiton given!");
+		}
+
+		Login login = new Login();				
+
+		frame = new JFrame();
+		frame.getContentPane().setBackground(Color.WHITE);
+		frame.getContentPane().setForeground(Color.WHITE);
+		frame.setBounds(0, 0, 884, 583);
+		frame.setVisible(true);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setResizable(false);
+		frame.getContentPane().setLayout(null);
+		frame.add(login);
+		frame.setContentPane(login);
+		//				login.setVisible(true);
+		;
+
+
+	}
+}

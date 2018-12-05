@@ -1,0 +1,30 @@
+package networking_client;
+
+public class UpdateHandler implements Runnable{
+	
+	Updates main = null;
+	int currentChanges = 0, recievedChanges = 0;;
+	
+	public UpdateHandler(Updates main) {
+		this.main = main;
+		currentChanges = main.getChanges();
+	}
+	
+	@Override
+	public void run() {
+		while(true) {
+			recievedChanges = Communicate.getChanges(currentChanges);
+			if(recievedChanges != currentChanges) {
+				currentChanges = main.setChanges(recievedChanges);
+				System.out.println("Changes are different");
+			}
+			try {
+				Thread.sleep(2000);
+			} catch (InterruptedException e) {
+				System.err.println("Insomnia");
+				e.printStackTrace();
+			}
+		}
+	}
+
+}

@@ -1,0 +1,21 @@
+package aesEncryption;
+
+public class Tests {
+
+	public static void main(String[] args) {
+		String cipheredText = "Testing my AES encryption program";
+		byte[] encrypted = null;
+		System.out.println(cipheredText);
+		try {
+			encrypted = AES.encrypt(cipheredText);
+		} catch (Exception e) {
+		}
+		System.out.println(new String(encrypted));
+		try {
+			cipheredText = AES.decrypt(encrypted);
+		} catch (Exception e) {
+		}
+		System.out.println(cipheredText);
+	}
+
+}

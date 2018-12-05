@@ -1,0 +1,76 @@
+package networking_server;
+
+import java.io.*;
+import java.net.*;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+
+public class Server {
+	
+	private ServerSocket serverSocket = null;
+	private Socket socket = null;
+	private ObjectInputStream inStream = null;
+	private ObjectOutputStream outStream = null;
+	private Executor pool = Executors.newCachedThreadPool();
+	private int portNumber = 5432, attempts = 0;
+	
+	public Server() {
+	}
+	
+	public Server(int portNumber) {
+		this.portNumber = portNumber;
+	}
+	
+	public void listen() {
+		while(attempts < 5) {
+			try {
+				serverSocket = new ServerSocket(portNumber);
+			} catch (IOException e1) {
+				System.err.println("Some significant issue with chosen port " + portNumber + ", will attempt another");
+			}
+			if(serverSocket != null) {
+				System.out.println("Server listening on port " + portNumber);
+				while(true) {
+					try {
+						System.out.println("Waiting for client...");
+						socket = serverSocket.accept();
+						System.out.println("Client connected");
+						inStream = new ObjectInputStream(socket.getInputStream());
+						outStream = new ObjectOutputStream(socket.getOutputStream());
+						pool.execute(new RunnableConnection(socket, inStream, outStream));
+						System.out.println("Assigned thread for Client");
+					} catch (Exception e) {
+						
+					}
+				}
+			} else if(serverSocket == null) {
+				System.err.println("Socket is null, port " + portNumber + " is likely unsuitable, will attempt another");
+				try {
+					Thread.sleep(2000);
+				} catch (InterruptedException e) {
+				}
+				portNumber++;
+				attempts++;
+			}
+		}
+		if(attempts >= 5) {
+			System.err.println("Five different ports appear to be unsuitable. Attempt a port significantly further than " + portNumber + " or stop running multiple instances of this server on the same computer.");
+			try {
+				Thread.sleep(5000);
+			} catch (InterruptedException e) {
+			}
+		}
+	}
+	
+	public static void main(String[] args){
+		Server server = null;
+		if (args.length == 0) {
+			server = new Server();
+		} else if (args[0] != null) {
+			server = new Server(Integer.parseInt(args[0]));
+		} else {
+			server = new Server();
+		}
+		server.listen();
+	}
+}

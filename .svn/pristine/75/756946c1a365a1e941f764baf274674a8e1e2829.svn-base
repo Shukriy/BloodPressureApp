@@ -1,0 +1,46 @@
+package GUI;
+
+public class Constraints {
+	public static boolean checkSys(int sys) {
+		if (sys > 300 || sys < 30)
+			return false;
+		else
+			return true;
+	}
+
+	public static boolean checkDias(int dias) {
+		if (dias > 200 || dias < 20)
+			return false;
+		else
+			return true;
+	}
+
+	public static boolean checkName(String firstName, String surName) {
+		if (firstName.length() > 30 || surName.length() > 30)
+			return false;
+		else
+			return true;
+	}
+
+	public static boolean checkUserName(String userName) {
+		if (userName.length() > 32 || userName.length() < 8)
+			return false;
+		else
+			return true;
+	}
+
+	public static boolean checkPassword(String password) {
+		if (password.length() > 32 || password.length() < 8)
+			return false;
+		else
+			return true;
+	}
+	
+	public static boolean checkDay(int day) {
+		if (day > 32 || day < 1)
+			return false;
+		else
+			return true;
+	}
+	
+}

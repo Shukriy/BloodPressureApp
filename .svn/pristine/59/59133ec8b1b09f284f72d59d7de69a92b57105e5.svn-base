@@ -1,0 +1,177 @@
+package FinalGUI;
+
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.ChartRenderingInfo;
+
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Image;
+import java.util.ArrayList;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.ValueAxis;
+
+import ccol.BloodPressure;
+import ccol.Patient;
+import ccol.Readings;
+import test.SampleObjects;
+
+import org.jfree.chart.plot.IntervalMarker;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYItemRenderer;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
+
+public class Graph {
+	private static Patient p;
+	private static ArrayList<Readings> readings;
+	private static int length;
+	private static JFreeChart lineChart;
+
+	public static ChartPanel getChart (Patient patient, int x, int y) {
+		p = patient;
+		readings = p.getReadings();
+		length = readings.size() + p.getrRemaining();
+		
+		lineChart = ChartFactory.createXYLineChart(
+				"Blood Pressure Readings",
+				"Readings","Blood Pressure",
+				createDataset(),
+				PlotOrientation.VERTICAL,
+				true,true,false);
+		
+		lineChart.setBackgroundPaint(Color.white);
+		
+		// Sets Correct xAxis Range        
+		length = readings.size() + p.getrRemaining();
+		XYPlot plot = (XYPlot) lineChart.getPlot();
+		ValueAxis xAxis = plot.getDomainAxis();
+		xAxis.setRange(0, length+1);
+		plot.setBackgroundPaint(Color.white);
+		
+		// Makes sys and dias plot lines thicker
+		lineChart.getTitle().setVisible(false);
+		
+		XYItemRenderer r = plot.getRenderer(); 
+		BasicStroke wideLine = new BasicStroke(3.0f);
+		BasicStroke dashed = new BasicStroke(
+		        2.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND,
+		        1.0f, new float[] {6.0f, 6.0f}, 0.0f);
+		
+		r.setSeriesStroke(0, wideLine);
+		r.setSeriesStroke(1, wideLine);		
+		r.setSeriesStroke(2, dashed);
+		r.setSeriesStroke(3, dashed);
+		
+		plot.getRenderer().setSeriesPaint(0, Color.blue);		
+		plot.getRenderer().setSeriesPaint(1, Color.green);
+		plot.getRenderer().setSeriesPaint(2, Color.blue);		
+		plot.getRenderer().setSeriesPaint(3, Color.green);
+		
+		// Creates normal range boxes
+		int sysTarget = p.getTarget().getSys();
+		int diasTarget = p.getTarget().getDias();
+		
+		IntervalMarker diasMarker = new IntervalMarker(60.0, diasTarget);
+		IntervalMarker sysMarker = new IntervalMarker(diasTarget, sysTarget);
+		
+		sysMarker.setPaint(Color.blue);
+		sysMarker.setAlpha(0.2f);
+        plot.addRangeMarker(sysMarker);
+        diasMarker.setPaint(Color.green);
+		diasMarker.setAlpha(0.2f);
+        plot.addRangeMarker(diasMarker);
+		
+		ChartPanel chartPanel = new ChartPanel(lineChart);
+		Dimension d = new Dimension(x, y);
+		chartPanel.setPreferredSize(d);
+		chartPanel.setVisible(true);
+		return chartPanel;
+	}
+
+	private static XYSeriesCollection createDataset() {
+		
+		XYSeriesCollection data = new XYSeriesCollection();		
+		if (length == 0) return data;
+		
+		XYSeries sysLine = new XYSeries("Systolic");
+		XYSeries diasLine = new XYSeries("Diastolic");
+		
+		// Adding systolic and diastolic values
+		int x = 0;
+        for (Readings r : readings) {
+        	int sys = r.getAve().getSys();
+        	int dias = r.getAve().getDias();
+        	sysLine.add(x, sys);
+        	diasLine.add(x, dias);
+        	x++;
+        }
+       
+        //Ave BP
+        BloodPressure ave = ave();
+        
+        // Add average systolic
+        XYSeries sysAve = new XYSeries("Systolic Average");
+        sysAve.add(0, ave.getSys());
+        sysAve.add(length+2, ave.getSys());
+        
+        // Add average diastolic
+        XYSeries diasAve = new XYSeries("Diastolic Average");
+        diasAve.add(0, ave.getDias());
+        diasAve.add(length+2, ave.getDias());
+        
+        
+        // Adding lines to graph        
+        data.addSeries(sysLine);
+        data.addSeries(diasLine);
+        data.addSeries(sysAve);
+        data.addSeries(diasAve);
+        return data;
+	}
+	
+	public static BloodPressure ave(){
+		if (readings.size() == 0) {
+			return new BloodPressure(0,0);
+		} else {		
+			int sumS = 0;
+			int sumD = 0;
+			for (int i = 0; i < readings.size(); i++) {
+				sumS+= readings.get(i).getAve().getSys();
+				sumD+= readings.get(i).getAve().getDias();
+			}
+			int avgS =sumS/readings.size();
+			int avgD =sumD/readings.size();
+			BloodPressure avgBP = new BloodPressure(avgS,avgD);
+			return avgBP;
+		}
+	}
+	
+	public static Image getImage (Patient patient, int x, int y) {
+		getChart(patient, x, y);
+		Image img = lineChart.createBufferedImage(x, y);
+		return img;
+	}
+
+	public static void main( String[ ] args ) {
+		Patient p = (Patient) SampleObjects.getUser("dummy", "dummy");
+		
+		JFrame frame = new JFrame("Swing and JavaFX");
+		int x = 500;
+		int y = 300;
+		
+		JPanel panel = new JPanel();
+		ChartPanel chart = getChart (p, x, y);
+		panel.add(chart);
+		frame.add(panel);
+		frame.setVisible(true);
+		frame.setSize(x, y);
+		frame.setVisible(true);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	}
+}

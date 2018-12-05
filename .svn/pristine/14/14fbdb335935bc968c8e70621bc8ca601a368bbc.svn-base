@@ -1,0 +1,43 @@
+package NEW;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+
+import javax.swing.JFrame;
+
+/**This class represents the view.
+ *  Essentially here we create the JFrame (top-level container),
+ *  and all the classes which make up the complete GUI.
+ *
+ */
+
+
+public class LoginView{
+	  public static void main(String[] args) throws Exception {
+				javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
+
+				//Here we create 2 Views with the same 
+				//model passed as an argument, to visualise
+				//the effect of the Observer pattern.
+				// That is, when a change happens to one view, the other
+				//is being updated accordingly.
+				
+				Model model = new Model();
+				LoginPane login = new LoginPane(model);
+				
+			
+				JFrame frame = new JFrame();
+				frame.getContentPane().setBackground(Color.WHITE);
+				frame.getContentPane().setForeground(Color.WHITE);
+				frame.setBounds(0, 0, 884, 583);
+				frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+				//frame.setSize(Toolkit.getDefaultToolkit().getScreenSize());
+				frame.setResizable(false);
+				frame.getContentPane().setLayout(null);
+				frame.add(login);
+				login.setVisible(true);
+				frame.setVisible(true);
+		
+				
+		}
+}

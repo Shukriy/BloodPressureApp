@@ -1,0 +1,72 @@
+package NEW;
+
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import java.awt.Color;
+import javax.swing.JTextField;
+import java.awt.Font;
+import javax.swing.JPasswordField;
+import java.io.IOException;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+
+//I extend Jframe to use the window dispose method
+public class LoginPane extends JPanel   {
+
+	private Model model;
+
+	public LoginPane(Model mode){
+		this.model = model;
+
+		this.setBounds(0, 0, 884, 583);
+//		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//		frame.setResizable(false);
+		this.setLayout(null);
+		
+		JPanel panel1 = new JPanel();
+		panel1.setBounds(395, 0, 489, 606);
+		panel1.setBackground(new Color(153, 204, 255));
+		this.add(panel1);
+		panel1.setLayout(null);
+		
+		JTextField txtUsername = new JTextField();
+		txtUsername.setBounds(149, 168, 232, 36);
+		txtUsername.setFont(new Font("Lucida Grande", Font.PLAIN, 15));
+		txtUsername.setForeground(Color.GRAY);
+		panel1.add(txtUsername);
+		txtUsername.setColumns(10);
+		
+		JPasswordField passwordField = new JPasswordField();
+		passwordField.setBounds(149, 235, 232, 36);
+		passwordField.setToolTipText("");
+		panel1.add(passwordField);
+		
+		JButton btnNewButton = new JButton("Login");
+		btnNewButton.setBounds(149, 300, 232, 41);
+		btnNewButton.setFont(new Font("Lucida Grande", Font.PLAIN, 15));
+		panel1.add(btnNewButton);
+		
+		JLabel lblPassword = new JLabel("PASSWORD");
+		lblPassword.setBounds(149, 216, 81, 25);
+		lblPassword.setFont(new Font("Lucida Grande", Font.PLAIN, 13));
+		panel1.add(lblPassword);
+		
+		JLabel lblUserName = new JLabel("USERNAME");
+		lblUserName.setBounds(152, 145, 89, 25);
+		lblUserName.setFont(new Font("Lucida Grande", Font.PLAIN, 13));
+		panel1.add(lblUserName);
+	
+		ImageIcon image = new ImageIcon("./img/bp.png");
+		JLabel lblNewLabel_1 = new JLabel(image);
+		lblNewLabel_1.setBounds(28, 109, 324, 324);
+		this.add(lblNewLabel_1);
+		btnNewButton.addActionListener(new LoginListener(model,txtUsername.getText(), passwordField.getText()));
+	
+	}
+
+			
+	}
+
+
+		

@@ -1,0 +1,93 @@
+package networking_client;
+
+import java.io.*;
+import java.net.*;
+
+import ccol.TransmissionObject;
+
+public class Client {
+	
+	private Socket socket = null;
+	private ObjectInputStream inputStream = null;
+	private ObjectOutputStream outputStream = null;
+	private TransmissionObject recieved = null;
+	private boolean isConnected = false;
+	private String host;
+	private int port;
+	
+	public Client() {
+		this.port = 5432;
+//		this.host = "172.22.132.79";
+		try {			
+			this.host = InetAddress.getLocalHost().getHostName();
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public Client(String host,
+				  int port) {
+		this.host = host;
+		this.port = port;
+	}
+	
+	public TransmissionObject send(TransmissionObject to) {
+		TransmissionObject rt = null;
+		while (!isConnected) {
+			System.out.println("trying to connect");
+			try {
+				socket = new Socket(host, port);
+				System.out.println("Connected");
+				isConnected = true;
+				outputStream = new ObjectOutputStream(socket.getOutputStream());
+				inputStream = new ObjectInputStream(socket.getInputStream());
+				outputStream.writeObject(to);
+				recieved = (TransmissionObject)inputStream.readObject();
+				outputStream.flush();
+				outputStream.close();
+				rt = recieved;
+			} catch (Exception se) {
+				se.printStackTrace();
+			}
+		}
+		return rt;
+	}
+	
+	//Alternate method
+	public void openConnection() {
+		while(!isConnected) {
+			try {
+				socket = new Socket(host, port);
+				System.out.println("Connected");
+				outputStream = new ObjectOutputStream(socket.getOutputStream());
+				inputStream = new ObjectInputStream(socket.getInputStream());
+			} catch (IOException e) {
+				System.out.println("Connection failed. Retrying...");
+			}
+			
+		}
+	}
+	
+	public TransmissionObject sendAlt(TransmissionObject to) {
+		TransmissionObject rt = null;
+		try {
+			outputStream.writeObject(to);
+			rt = (TransmissionObject)inputStream.readObject();
+			return recieved;
+		} catch (IOException | ClassNotFoundException e) {
+			System.out.println("Send failed");
+			e.printStackTrace();
+		}
+		return rt;
+	}
+	
+	public void closeConnection() {
+		try {
+			outputStream.flush();
+			outputStream.close();
+		} catch (IOException e) {
+			System.out.println("Failed to close connection. Was it open?");
+			e.printStackTrace();
+		}
+	}
+}

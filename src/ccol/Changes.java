@@ -1,0 +1,88 @@
+package ccol;
+
+import java.util.ArrayList;
+
+/**
+ * Class for tracking the changes that are made to the database, allowing for realtime updating of client applications with changes
+ * where privileged to view. Manages an ArrayList of changes which can be returned in it entirety or with an offset.
+ * @author Thomas Cunningham
+ *
+ */
+public class Changes {
+	private static ArrayList<Change> turnAndFaceTheStrange = new ArrayList<Change>();
+	
+	/**
+	 * One of two methods for adding changes. Change object is created an added based on information given as arguments.
+	 * @param type Whether the change was a reading being added or a user. 0 for adding a user, 1 for adding a reading.
+	 * @param userID The userID that relates to the change.
+	 */
+	public static synchronized void addChange(int type, int userID) {
+		if(type == 0) {
+			turnAndFaceTheStrange.add(new Change(0, userID, turnAndFaceTheStrange.size()));
+		} else if(type == 1) {
+			turnAndFaceTheStrange.add(new Change(1, userID, turnAndFaceTheStrange.size()));
+		} else {
+			throw new IllegalArgumentException("Type must be 0 or 1");
+		}
+	}
+	
+	public static synchronized void addChangeOfAny(Change change) {
+		turnAndFaceTheStrange.add(change);
+	}
+	
+	public static synchronized void addChange() {
+		turnAndFaceTheStrange.add(new Change());
+	}
+	
+	/**
+	 * One of two methods for adding changes. Change object is created an added based on information given as arguments.
+	 * @param type Whether the change was a reading being added or a user. 0 for adding a user, 1 for adding a reading.
+	 * @param patient The patient that relates to the change.
+	 */
+	public static synchronized void addChange(int type, Patient patient) {
+		if(type == 0) {
+			turnAndFaceTheStrange.add(new Change(0, patient.getUserID(), turnAndFaceTheStrange.size()));
+		} else if(type == 1) {
+			turnAndFaceTheStrange.add(new Change(1, patient.getUserID(), turnAndFaceTheStrange.size()));
+		} else {
+			throw new IllegalArgumentException("Type must be 0 or 1");
+		}
+	}
+	
+	/**
+	 * Method for accessing the changes that have been made to the database. Offset is given to specify the number of changes that are returned.
+	 * @param offset How many changes to be returned. Pass -1 as argument for all changes.
+	 * @return The changes made.
+	 */
+	public static synchronized ArrayList<Change> getChanges(int offset){
+		if(offset == -1) {
+			return turnAndFaceTheStrange;
+		} else if(offset > -1) {
+			ArrayList<Change> rt = new ArrayList<Change>();
+			int i = offset;
+			while(i < turnAndFaceTheStrange.size()) {
+				rt.add(turnAndFaceTheStrange.get(i));
+				i++;
+			}
+			return rt;
+		} else {
+			throw new IllegalArgumentException("Offset must -1 for all or greater to specify");
+		}
+	}
+	
+	/**
+	 * Method for getting the number of changes.
+	 * @param offset Where the client is in the list of changes.
+	 * @return The number of changes that have occurred.
+	 */
+	public static synchronized int numberOfChanges(int offset) {
+		System.out.println("Number of changes currently are " + turnAndFaceTheStrange.size());
+		if(offset == -1) {
+			return turnAndFaceTheStrange.size();
+		} else if(offset != turnAndFaceTheStrange.size()) {
+			return turnAndFaceTheStrange.size() - offset;
+		} else {
+			return offset;
+		}
+	}
+}

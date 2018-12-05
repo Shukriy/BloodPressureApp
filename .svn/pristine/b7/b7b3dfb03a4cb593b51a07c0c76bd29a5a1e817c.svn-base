@@ -1,0 +1,30 @@
+package networking_client;
+
+import java.util.ArrayList;
+
+import ccol.Patient;
+
+public class Tests {
+
+	public static void main(String[] args) {
+		
+		Updates update = new Updates();
+		Communicate.startUpdater(update);
+		System.out.println("Number of changes are before change:" + update.getNumberOfChanges());
+		System.out.println(Communicate.getUser("dummy", "dummy"));
+		System.out.println(Communicate.getUser("dummy", "dummy"));
+		System.out.println(Communicate.getUser("dummy", "dummy"));
+		System.out.println(Communicate.getUser("dummy", "dummy"));
+		System.out.println("Number of changes are after change:" + update.getNumberOfChanges());
+		System.out.println("Number of changes after checking again are:" + update.getNumberOfChanges());
+		while(true) {
+			try {
+				Thread.sleep(1000);
+				System.out.println("Number of changes after checking again are:" + update.getNumberOfChanges());
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+}

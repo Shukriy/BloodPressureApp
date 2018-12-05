@@ -1,0 +1,66 @@
+package ccol;
+
+import java.io.Serializable;
+
+public class Change implements Serializable{
+
+	private static final long serialVersionUID = -2490349818295613132L;
+	boolean addUser, addReading, generic = false, readingCompleted;
+	int userID, offset;
+	
+	public Change(int type,
+				  int userID,
+				  int offset) {
+		if(type == 0) {
+			addUser = true;
+			addReading = false;
+			readingCompleted = false;
+		} else if (type == 1) {
+			addUser = false;
+			addReading = true;
+			readingCompleted = false;
+		} else if (type == 2) {
+			readingCompleted = true;
+			addUser = false;
+			addReading = false;
+		}
+		this.userID = userID;
+		this.offset = offset;
+	}
+	
+	public Change() {
+		System.out.println("***********Generic change being added*********");
+		this.generic = true;
+	}
+
+	public boolean isAddUser() {
+		return addUser;
+	}
+
+	public boolean isAddReading() {
+		return addReading;
+	}
+	
+	public boolean isGeneric() {
+		return generic;
+	}
+
+	public int getUserID() {
+		return userID;
+	}
+
+	public int getOffset() {
+		return offset;
+	}
+	
+	public String toString() {
+		String type = "";
+		if(addReading) {
+			type = "added a reading";
+		} else if (addUser) {
+			type = "added a user";
+		}
+		return "This change " + type + ". This relates to" + getUserID() + ". This was change/offset " + offset;
+	}
+	
+}

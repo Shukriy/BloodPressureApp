@@ -1,0 +1,71 @@
+package unitTest;
+
+import static org.junit.Assert.*;
+
+import java.sql.Date;
+import java.sql.Time;
+import java.util.ArrayList;
+
+import org.junit.Test;
+
+import NEW.Model;
+import ccol.BloodPressure;
+import ccol.Patient;
+import ccol.Readings;
+import db.Db;
+
+
+public class DbTest {
+	
+	Db db = new Db();
+	
+	@Test
+	public void test1() {	
+		Patient p = (Patient) db.getUser("dummy", "dummy");
+		
+	}
+	
+	@Test
+	public void test2() {
+		average.add(BP1);
+		average.add(BP1);
+		readings.add(reading1);
+		readings.add(reading2);
+		ArrayList<BloodPressure> expected = average;
+		ArrayList<BloodPressure> actual = Model.AVG(readings);
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void test3() {
+		patient2.addReading(reading3);
+		patient2.addReading(reading1);
+		patient2.addReading(reading4);
+		BloodPressure expected = new BloodPressure(180,120);
+		BloodPressure actual = Model.getAvgSystolic(patient2);
+		assertEquals(expected, actual);
+	}
+
+	@Test
+	public void test4() {
+		average.add(BP1);
+		average.add(BP2);
+		average.add(BP3);
+		average.add(BP4);
+		BloodPressure expected1 = new BloodPressure(111,30);
+		BloodPressure actual1 = Model.MAX(average);
+		assertEquals(expected1, actual1);
+		
+		BloodPressure expected2 = new BloodPressure(111,30);
+		BloodPressure actual2 = Model.MIN(average);
+		assertEquals(expected2, actual2);
+	}
+
+
+	@Test
+	public void test5() {
+		int expected = 12;
+		int actual = Model.getNoReadingLeft(patient2);
+		assertEquals(expected, actual);
+	}
+}

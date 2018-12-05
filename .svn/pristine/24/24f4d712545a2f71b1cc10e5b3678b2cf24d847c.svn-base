@@ -1,0 +1,126 @@
+package FinalGUI;
+
+import javax.swing.JPanel;
+import java.awt.Color;
+import javax.swing.JTextField;
+
+import FinalGUI.DHomePage;
+import FinalGUI.PHomePage;
+import ccol.Doctor;
+import ccol.Patient;
+import ccol.User;
+import networking_client.Communicate;
+import test.SampleObjects;
+
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
+
+import javax.swing.JPasswordField;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.Icon;
+
+public class Login extends JPanel {
+	private JTextField textField;
+	private JPasswordField passwordField;
+	private JTextField txtUsername;
+	private JButton btnNewButton;
+	private User user;
+	private Patient patient;
+	private Doctor doctor;
+	private char role;
+
+	/**
+	 * Create the panel.
+	 */
+	public Login() {
+		this.setBackground(Color.WHITE);
+		this.setLayout(null);
+		this.setBounds(0, 0, 884, 583);
+		this.setVisible(true);
+		
+		JPanel panel = new JPanel();
+		panel.setLayout(null);
+		panel.setBackground(new Color(153, 204, 255));
+		panel.setBounds(410, -11, 474, 582);
+		panel.setVisible(true);
+		this.add(panel);
+		
+		txtUsername = new JTextField();
+		txtUsername.setBounds(149, 168, 232, 36);
+		txtUsername.setFont(new Font("Lucida Grande", Font.PLAIN, 15));
+		txtUsername.setForeground(Color.GRAY);
+		panel.add(txtUsername);
+		txtUsername.setColumns(10);
+		
+		passwordField = new JPasswordField();
+		passwordField.setToolTipText("");
+		passwordField.setBounds(149, 235, 232, 36);
+		panel.add(passwordField);
+		
+		btnNewButton = new JButton("Login");
+		btnNewButton.addActionListener(new ActionListener() {
+			private Doctor doctor;
+
+			public void actionPerformed(ActionEvent e) {
+				//login validation
+
+				String username = txtUsername.getText();//what user input
+				String password = new String(passwordField.getPassword()).trim();
+
+				//call this method, return a string value, indicate feedback of login.
+				user = Communicate.getUser(username, password);
+				//if failed
+				if(user == null) 
+					JOptionPane.showMessageDialog(null, "wrong username or password");
+				else {
+					//						JOptionPane.showMessageDialog(null, "login success!");
+					role = user.getRole();
+					if(role=='p') {
+//						frame.dispose();
+						PHomePage p;
+						try {
+							patient = (Patient) user;//casted user to patient to get the target
+							p = new PHomePage(patient);
+							View.frame.add(p);
+							View.frame.setContentPane(p);
+							System.out.println(patient);
+						} catch (IOException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+
+
+					}else if(role=='d') {
+//						frame.dispose();
+						DHomePage d;
+						doctor = (Doctor) user;
+						d = new DHomePage(doctor);				
+					}
+				}
+			}
+		}
+				);
+		btnNewButton.setBounds(149, 300, 232, 41);
+		btnNewButton.setFont(new Font("Lucida Grande", Font.PLAIN, 15));
+		panel.add(btnNewButton);
+		
+		JLabel label = new JLabel("PASSWORD");
+		label.setFont(new Font("Dialog", Font.PLAIN, 13));
+		label.setBounds(149, 216, 81, 25);
+		panel.add(label);
+		
+		JLabel label_1 = new JLabel("USERNAME");
+		label_1.setFont(new Font("Dialog", Font.PLAIN, 13));
+		label_1.setBounds(152, 145, 89, 25);
+		panel.add(label_1);
+		
+		JLabel label_2 = new JLabel((Icon) null);
+		label_2.setBounds(26, 78, 324, 324);
+		add(label_2);
+
+	}
+}

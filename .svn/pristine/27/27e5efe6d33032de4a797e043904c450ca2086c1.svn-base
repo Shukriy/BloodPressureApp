@@ -1,0 +1,333 @@
+package GUI;
+
+import java.awt.EventQueue;
+
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import javax.swing.JTextField;
+import javax.swing.ListModel;
+import javax.swing.border.LineBorder;
+
+import ccol.BloodPressure;
+import ccol.Patient;
+import ccol.Readings;
+import model.Model;
+import networking_client.Communicate;
+import networking_client.Updates;
+import pdf.Pdf;
+
+import javax.swing.JLabel;
+import javax.swing.UIManager;
+import javax.swing.JList;
+import java.awt.Font;
+import java.util.ArrayList;
+import java.util.Observable;
+import java.util.Observer;
+
+import javax.swing.JButton;
+import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.awt.event.ActionEvent;
+import java.awt.SystemColor;
+
+public class ViewPatient implements Observer {
+
+	private JFrame frame;
+	private JPanel contentPane;
+	private Updates update;
+	private static Patient patient;
+	private static ArrayList<Readings> readings;
+	private static BloodPressure ave;
+	private static BloodPressure min;
+	private static BloodPressure max;
+	
+	
+	/**
+	 * Create the application.
+	 */
+	public ViewPatient(Patient patient) {
+		this.patient = patient;
+		this.update = new Updates();
+		
+		readings = patient.getReadings(); 
+		AVG();
+		MIN();
+		MAX();
+		
+		frame = new JFrame();
+		frame.setBounds(100, 100, 1100, 700);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.getContentPane().setLayout(null);
+		frame.setResizable(false);
+		
+		update.addObserver(this);
+		initialize();
+		Communicate.startUpdater(update);
+	}
+
+	/**
+	 * Initialize the contents of the frame.
+	 */
+	private void initialize() {
+		
+		JPanel panel = new JPanel();
+		panel.setBackground(new Color(153, 204, 255));
+		panel.setForeground(Color.BLACK);
+		panel.setBounds(0, 0, 1094, 79);
+		frame.getContentPane().add(panel);
+		panel.setLayout(null);
+		
+		JLabel lblName = new JLabel("Name:");
+		lblName.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		lblName.setBounds(15, 15, 69, 20);
+		panel.add(lblName);
+		
+		JLabel lblAddress = new JLabel("Address:");
+		lblAddress.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		lblAddress.setBounds(15, 45, 90, 20);
+		panel.add(lblAddress);
+		
+		JLabel lblDob = new JLabel("DOB:");
+		lblDob.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		lblDob.setBounds(500, 15, 96, 20);
+		panel.add(lblDob);
+		
+		JLabel lblNhsNo = new JLabel("NHS No:");
+		lblNhsNo.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		lblNhsNo.setBounds(500, 45, 96, 20);
+		panel.add(lblNhsNo);
+		
+		JLabel nameField = new JLabel(patient.getFirstName() + " " + patient.getSurName());
+		nameField.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		nameField.setBounds(99, 15, 390, 20);
+		panel.add(nameField);
+		
+		JLabel addressField = new JLabel(patient.getAddress());
+		addressField.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		addressField.setBounds(100, 45, 390, 20);
+		panel.add(addressField);
+		
+		String dob = patient.getDob();
+		String fDob = dob.substring(0, 2) + "/" + dob.substring(2, 4) + "/" 
+				+ dob.substring(4, dob.length());
+		JLabel dobField = new JLabel(fDob);
+		dobField.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		dobField.setBounds(591, 15, 153, 20);
+		panel.add(dobField);
+		
+		JLabel nhsField = new JLabel(patient.getNhsNumber());
+		nhsField.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		nhsField.setBounds(591, 45, 153, 20);
+		panel.add(nhsField);
+		
+		JButton btnGeneratePdf = new JButton("Generate PDF");
+		btnGeneratePdf.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					Pdf.createPDF(patient, ave, min, max);
+				} catch (Exception e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+		});
+		btnGeneratePdf.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		btnGeneratePdf.setBounds(895, 15, 168, 50);
+		panel.add(btnGeneratePdf);
+		
+		
+		JPanel panel_1 = new JPanel();		
+		
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					panel_1.add(Graph.getChart(patient, 1090, 271));
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+		
+		panel_1.setBounds(0, 89, 1094, 275);
+		frame.getContentPane().add(panel_1);
+		
+		JPanel panel_2 = new JPanel();
+		panel_2.setBackground(new Color(153, 204, 255));
+		panel_2.setBounds(0, 375, 1094, 285);
+		frame.getContentPane().add(panel_2);
+		panel_2.setLayout(null);
+		
+		JLabel lblAverageBp = new JLabel("Average BP:");
+		lblAverageBp.setFont(new Font("Tahoma", Font.PLAIN, 25));
+		lblAverageBp.setBounds(50, 80, 201, 35);
+		panel_2.add(lblAverageBp);
+		
+		JLabel lblTargetBp = new JLabel("Target BP:");
+		lblTargetBp.setFont(new Font("Tahoma", Font.PLAIN, 25));
+		lblTargetBp.setBounds(50, 40, 142, 35);
+		panel_2.add(lblTargetBp);
+		
+		JLabel lblLowestBp = new JLabel("Lowest BP:");
+		lblLowestBp.setFont(new Font("Tahoma", Font.PLAIN, 25));
+		lblLowestBp.setBounds(50, 120, 201, 35);
+		panel_2.add(lblLowestBp);
+		
+		JLabel lblHighestBp = new JLabel("Highest BP: ");
+		lblHighestBp.setFont(new Font("Tahoma", Font.PLAIN, 25));
+		lblHighestBp.setBounds(50, 160, 201, 35);
+		panel_2.add(lblHighestBp);
+		
+		JScrollPane scrollPane = new JScrollPane();
+		scrollPane.setBounds(410, 55, 664, 213);
+		panel_2.add(scrollPane);
+		
+		JList list = new JList();
+		list.setVisibleRowCount(6);
+		list.setFont(new Font("Tahoma", Font.PLAIN, 20));
+		
+		ListModel model = new DefaultComboBoxModel(readings.toArray());
+		list.setModel(model);
+		scrollPane.setViewportView(list);
+		
+		
+		JLabel targetField = new JLabel(patient.getTarget().toString());
+		targetField.setFont(new Font("Tahoma", Font.PLAIN, 25));
+		targetField.setBounds(215, 40, 152, 35);
+		panel_2.add(targetField);
+		
+		JLabel aveField = new JLabel(AVG().toString());
+		aveField.setFont(new Font("Tahoma", Font.PLAIN, 25));
+		aveField.setBounds(215, 80, 152, 35);
+		panel_2.add(aveField);
+		
+		JLabel lowField = new JLabel(MIN().toString());
+		lowField.setFont(new Font("Tahoma", Font.PLAIN, 25));
+		lowField.setBounds(215, 120, 152, 35);
+		panel_2.add(lowField);
+		
+		JLabel highField = new JLabel(MAX().toString());
+		highField.setFont(new Font("Tahoma", Font.PLAIN, 25));
+		highField.setBounds(215, 160, 152, 35);
+		panel_2.add(highField);
+		
+		JLabel lblBpReadings = new JLabel("BP Readings");
+		lblBpReadings.setForeground(UIManager.getColor("EditorPane.selectionForeground"));
+		lblBpReadings.setFont(new Font("Tahoma", Font.BOLD, 25));
+		lblBpReadings.setBounds(650, 5, 177, 44);
+		panel_2.add(lblBpReadings);
+		
+		JLabel lblRemaining = new JLabel("Remaining:");
+		lblRemaining.setFont(new Font("Tahoma", Font.PLAIN, 25));
+		lblRemaining.setBounds(50, 200, 142, 35);
+		panel_2.add(lblRemaining);
+		
+		JLabel remField = new JLabel(((Integer) patient.getrRemaining()).toString());
+		remField.setFont(new Font("Tahoma", Font.PLAIN, 25));
+		remField.setBounds(215, 200, 152, 35);
+		panel_2.add(remField);		
+		
+		frame.setVisible(true);
+
+	}
+
+	public static BloodPressure AVG(){
+		if (readings.size() == 0) {
+			return new BloodPressure(0,0);
+		} else {		
+			int sumS = 0;
+			int sumD = 0;
+			for (int i = 0; i < readings.size(); i++) {
+				sumS+= readings.get(i).getAve().getSys();
+				sumD+= readings.get(i).getAve().getDias();
+			}
+			int avgS =sumS/readings.size();
+			int avgD =sumD/readings.size();
+			ave = new BloodPressure(avgS,avgD);
+			return ave;
+		}
+	}
+	
+	public static BloodPressure MAX() {
+		if (readings.size() == 0) {
+			return new BloodPressure(0,0);
+		} else {		
+			int targetSys = patient.getTarget().getSys();
+			int targetDias = patient.getTarget().getDias();
+			int cMax = 0;
+			max = readings.get(0).getAve();
+			int i;
+			for (Readings r : readings) {
+				if (r.getAve().getSys() - targetSys > cMax) {
+					cMax = r.getAve().getSys() - targetSys;
+					max = r.getAve();
+				}
+				
+				if (r.getAve().getDias() - targetDias > cMax) {
+					cMax = r.getAve().getDias() - targetDias;
+					max = r.getAve();
+				}
+			}
+			return max;
+		}
+		
+	}
+	
+	public static BloodPressure MIN() {
+		if (readings.size() == 0) {
+			return new BloodPressure(0,0);
+		} else {		
+			int targetSys = patient.getTarget().getSys();
+			int targetDias = patient.getTarget().getDias();
+			int cMin = 0;
+			min = readings.get(0).getAve();
+			int i;
+			for (Readings r : readings) {
+				if (targetSys - r.getAve().getSys() > cMin) {
+					cMin = targetSys - r.getAve().getSys();
+					min = r.getAve();
+				}
+				
+				if (targetDias - r.getAve().getDias() > cMin) {
+					cMin = targetDias - r.getAve().getDias();
+					min = r.getAve();
+				}
+			}
+			return min;
+		}
+	}
+	
+	@Override
+	public void update(Observable o, Object arg) {
+		System.out.println("ready for update");
+
+		patient = (Patient) Communicate.getUser(patient.getUserName(), patient.getPass());
+		initialize();
+
+		System.out.println("complete update");
+
+
+	}	
+	
+	
+	/**
+	 * Launch the application.
+	 */
+	public static void main(String[] args) {
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					patient = (Patient) Communicate.getUser("dummy", "dummy");
+					ViewPatient window = new ViewPatient(patient);
+					window.frame.setVisible(true);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+}

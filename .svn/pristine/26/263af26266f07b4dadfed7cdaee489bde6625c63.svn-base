@@ -1,0 +1,39 @@
+package NEW;
+
+import java.awt.BorderLayout;
+
+import javax.swing.JFrame;
+
+/**This class represents the view.
+ *  Essentially here we create the JFrame (top-level container),
+ *  and all the classes which make up the complete GUI.
+ *
+ */
+
+
+public class LoginView{
+	  public static void main(String[] args) throws Exception {
+				javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
+
+				//Here we create 2 Views with the same 
+				//model passed as an argument, to visualise
+				//the effect of the Observer pattern.
+				// That is, when a change happens to one view, the other
+				//is being updated accordingly.
+				
+				Model model = new Model();
+				LoginPane login = new LoginPane(model);
+				
+			
+				JFrame gui = new JFrame();
+				gui.setLayout(new BorderLayout());
+				gui.add(login,BorderLayout.SOUTH);
+		    gui.pack();
+				gui.setTitle("Predictive Text");
+				gui.setVisible(true);
+			
+				gui.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+				
+		}
+}

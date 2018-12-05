@@ -1,0 +1,153 @@
+package ccol;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+
+public class TransmissionObject implements Serializable{
+	/*
+	 * Type meanings
+	 * 0 = closeConnection
+	 * 1 = User credentials for login
+	 * 2 = Adding a user
+	 * 3 = Returning a user from credentials
+	 * 4 = Adding reading
+	 * 5 = Operation success boolean
+	 * 6 = Check username client-> server
+	 * 7 = Is username present server -> client
+	 * 8 = Search for patient.
+	 * 9 = Patient search results.
+	 * 10 = User credentials for login with encrypted password.
+	 * 11 = Checking for updates
+	 * 12 = Get completed
+	 */
+	
+	private static final long serialVersionUID = -873222147733145721L;
+	int type = 0, offsetOrChanges, id;
+	String user, password;
+	byte[] encPass;
+	User userO;
+	Readings reading;
+	Boolean success;
+	ArrayList<Patient> searchResults;
+	
+	public TransmissionObject(String user,
+							  String password) {
+		type = 1;
+		this.user = user;
+		this.password = password;
+	}
+	
+	public TransmissionObject(String user,
+			  byte[] encPass) {
+		type = 10;
+		this.user = user;
+		this.encPass = encPass;
+	}
+	
+	public TransmissionObject(User user, int type) {
+		this.type = type;
+		userO = user;
+	}
+	
+	public TransmissionObject(Readings reading) {
+		type = 4;
+		this.reading = reading;
+	}
+	
+	public TransmissionObject(Boolean success) {
+		type = 5;
+		this.success = success;
+	}
+	
+	public TransmissionObject(String user, int type) {
+		this.user = user;
+		this.type = type;
+		
+	}
+	
+	public TransmissionObject(Boolean success, int type) {
+		this.type = type;
+		this.success = success;
+	}
+	
+	public TransmissionObject(ArrayList<Patient> searchResults) {
+		this.type = 9;
+		this.searchResults = searchResults;
+	}
+	
+	public int getType() {
+		return type;
+	}
+	
+	public TransmissionObject(int type) {
+		this.type = 0;
+	}
+	
+	public TransmissionObject(int value,
+							  int type) {
+		if(type == 11) {
+			this.type = type;
+			this.offsetOrChanges = value;
+		} else if(type == 12) {
+			this.type = type;
+			this.id = value;
+		}
+		
+	}
+	
+	public String[] getUserCredentials() {
+		if(type == 1) {
+			return new String[] {user, password};
+		} else {
+			throw new IllegalArgumentException("Transission object was not used for user credentials");
+		}
+	}
+	
+	public User getAdditionalUser() {
+		if(type == 2 ) {
+			return userO;
+		} else {
+			throw new IllegalArgumentException("Transission object was not used for adding a user");
+		}
+	}
+	
+	public User getReturnedUser() {
+		if(type == 3 ) {
+			return userO;
+		} else {
+			throw new IllegalArgumentException("Transission object was not used for requesting a user");
+		}
+	}
+	
+	public Readings getAdditionalReading() {
+		if(type == 4) {
+			return reading;
+		} else {
+			throw new IllegalArgumentException("Transission object was not used for adding a reading");
+		}
+	}
+	
+	public boolean isSuccess() {
+		return success;
+	}
+	
+	public String getUsername() {
+		return user;
+	}
+	
+	public byte[] getEncPassword() {
+		return encPass;
+	}
+	
+	public ArrayList<Patient> getSearchResults(){
+		return searchResults;
+	}
+	
+	public int getIntId() {
+		return this.id;
+	}
+	
+	public int getOffsetOrChanges() {
+		return this.offsetOrChanges;
+	}
+}

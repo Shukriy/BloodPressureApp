@@ -1,0 +1,27 @@
+package networking_client;
+
+import java.util.Observable;
+
+public class Updates extends Observable{
+	
+	private static int chchchanges = 0, offset = 0;
+	
+	public int getNumberOfChanges() {
+		int changes = chchchanges;
+		chchchanges = 0;
+		clearChanged();
+		return changes;
+	}
+	
+	public int setChanges(int changes){
+		int tempChange = chchchanges;
+		chchchanges += changes;
+		offset += changes;
+		if(tempChange == chchchanges) {
+			setChanged();
+			notifyObservers();
+		}
+		return offset;
+	}
+	
+}
